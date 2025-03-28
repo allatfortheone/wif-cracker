@@ -1,0 +1,13 @@
+{
+  "name": "wif-cracker",
+  "version": "1.0.0",
+  "description": "I don't know if this will even work but let's try",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "your-other-dependencies": "version"
+  }
+}
